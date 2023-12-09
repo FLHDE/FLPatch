@@ -37,6 +37,31 @@ void Patch(LPVOID vOffset, LPVOID mem, UINT len)
     memcpy(vOffset, mem, len);
 }
 
+bool IsCharHexadecimal(char c)
+{
+    return (c >= '0' && c <= '9') || (tolower(c) >= 'a' && tolower(c) <= 'f');
+}
+
+void StringToHex(LPCSTR str, std::string &dest)
+{
+    int hexIndex = 0;
+    char hexBytes[3] = { 0 };
+
+    for (UINT i = 0; str[i] != NULL; ++i)
+    {
+        if (IsCharHexadecimal(str[i]))
+            hexBytes[hexIndex++] = str[i];
+
+        if (hexIndex == 2)
+        {
+            dest += (char) strtoul(hexBytes, NULL, 16);
+
+            hexIndex = 0;
+            ZeroMemory(hexBytes, 2);
+        }
+    }
+}
+
 void Init()
 {
     INI_Reader reader;
@@ -96,22 +121,10 @@ void Init()
                     }
                     case Hex:
                     {
-                        int hi = 0;
                         LPCSTR strVal = reader.get_value_string();
-                        char hexBytes[3] = { 0 };
                         std::string bytes;
 
-                        for (UINT i = 0; strVal[i] != NULL; ++i) {
-                            if ((strVal[i] >= '0' && strVal[i] <= '9') || (tolower(strVal[i]) >= 'a' && tolower(strVal[i]) <= 'f'))
-                                hexBytes[hi++] = strVal[i];
-
-                            if (hi == 2) {
-                                bytes += (char) strtoul(hexBytes, NULL, 16);
-
-                                hi = 0;
-                                ZeroMemory(hexBytes, 2);
-                            }
-                        }
+                        StringToHex(strVal, bytes);
 
                         Patch(vOffset, bytes.begin(), bytes.size());
                         break;
