@@ -121,10 +121,8 @@ void Init()
                     }
                     case Hex:
                     {
-                        LPCSTR strVal = reader.get_value_string();
                         std::string bytes;
-
-                        StringToHex(strVal, bytes);
+                        StringToHex(reader.get_value_string(), bytes);
 
                         Patch(vOffset, bytes.begin(), bytes.size());
                         break;
