@@ -78,10 +78,16 @@ void Init()
         UINT offset = NULL;
         PatchType patchType = Hex;
 
+        bool ignore = false;
+
         while (reader.read_value())
         {
-            if (reader.is_value("module"))
+            if (reader.is_value("module")) {
                 module = (UINT) GetModuleHandleA(reader.get_value_string());
+
+                if (module == NULL)
+                    ignore = true;
+            }
 
             if (reader.is_value("offset"))
                 offset = (UINT) strtoul(reader.get_value_string(), NULL, 16);
@@ -91,6 +97,9 @@ void Init()
 
             if (reader.is_value("value"))
             {
+                if (ignore)
+                    continue;
+
                 LPVOID vOffset = (LPVOID) (module + offset);
 
                 switch (patchType)
