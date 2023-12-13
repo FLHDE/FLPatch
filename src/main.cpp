@@ -1,4 +1,4 @@
-#include "Common.h"
+#include "main.h"
 #include <iostream>
 
 DWORD _;
@@ -7,7 +7,8 @@ typedef enum PatchType {
     Hex, Int, Byte, Float, Double
 } PatchType;
 
-PatchType GetPatchType(LPCSTR str) {
+PatchType GetPatchType(LPCSTR str)
+{
     UINT length = strlen(str);
 
     if (length == 0)
@@ -62,7 +63,34 @@ void StringToHex(LPCSTR str, std::string &dest)
     }
 }
 
-void Init()
+HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName) {
+    HMODULE result = LoadLibraryA(lpLibFileName);
+
+    if (result != NULL)
+    {
+        if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
+        {
+            DWORD loadLibraryAddrRpc = (DWORD) result + 0xF210;
+            SetLoadLibraryAHook(loadLibraryAddrRpc);
+        }
+        else if (stricmp(lpLibFileName, "server.dll") == 0)
+        {
+            Init((UINT) result);
+        }
+    }
+
+    return result;
+}
+
+void SetLoadLibraryAHook(DWORD location)
+{
+    static DWORD hookPtr = (DWORD) LoadLibraryAHook;
+    DWORD hookPtrRef = (DWORD) &hookPtr;
+
+    Patch((PVOID) location, &hookPtrRef, sizeof(DWORD));
+}
+
+void Init(UINT onlyAllowedModule = NULL)
 {
     INI_Reader reader;
 
@@ -78,15 +106,11 @@ void Init()
         UINT offset = NULL;
         PatchType patchType = Hex;
 
-        bool ignore = false;
-
         while (reader.read_value())
         {
-            if (reader.is_value("module")) {
+            if (reader.is_value("module"))
+            {
                 module = (UINT) GetModuleHandleA(reader.get_value_string());
-
-                if (module == NULL)
-                    ignore = true;
             }
 
             if (reader.is_value("offset"))
@@ -97,7 +121,7 @@ void Init()
 
             if (reader.is_value("value"))
             {
-                if (ignore)
+                if (module == NULL || offset == NULL || (onlyAllowedModule != NULL && onlyAllowedModule != module))
                     continue;
 
                 LPVOID vOffset = (LPVOID) (module + offset);
@@ -149,8 +173,18 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     UNREFERENCED_PARAMETER(hinstDLL);
     UNREFERENCED_PARAMETER(lpReserved);
 
+    // TODO: Support FLServer
+    // TODO: Hook Server.dll load on client
+    // IsMPServer common.dll might be useful
+    // Call set value functions common.dll
+    // Split up into multiple files
     if (fdwReason == DLL_PROCESS_ATTACH)
+    {
         Init();
+
+        DWORD loadLibraryAddrFl = 0x5B6F48;
+        SetLoadLibraryAHook(loadLibraryAddrFl);
+    }
 
     return TRUE;
 }
