@@ -3,7 +3,8 @@
 
 DWORD _;
 
-typedef enum PatchType {
+typedef enum PatchType
+{
     Hex, Int, Byte, Float, Double
 } PatchType;
 
@@ -63,7 +64,8 @@ void StringToHex(LPCSTR str, std::string &dest)
     }
 }
 
-HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName) {
+HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
+{
     HMODULE result = LoadLibraryA(lpLibFileName);
 
     if (result != NULL)
@@ -102,16 +104,13 @@ void Init(UINT onlyAllowedModule = NULL)
         if (!reader.is_header("Patch"))
             continue;
 
-        UINT module = 0x400000;
-        UINT offset = NULL;
+        UINT module, offset = NULL;
         PatchType patchType = Hex;
 
         while (reader.read_value())
         {
             if (reader.is_value("module"))
-            {
                 module = (UINT) GetModuleHandleA(reader.get_value_string());
-            }
 
             if (reader.is_value("offset"))
                 offset = (UINT) strtoul(reader.get_value_string(), NULL, 16);
