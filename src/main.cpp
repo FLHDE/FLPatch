@@ -174,16 +174,18 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     UNREFERENCED_PARAMETER(lpReserved);
 
     // TODO: Support FLServer
-    // TODO: Hook Server.dll load on client
-    // IsMPServer common.dll might be useful
     // Call set value functions common.dll
     // Split up into multiple files
+    // Define hard coded addresses
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         Init();
 
-        DWORD loadLibraryAddrFl = 0x5B6F48;
-        SetLoadLibraryAHook(loadLibraryAddrFl);
+        if (!IsMPServer())
+        {
+            DWORD loadLibraryAddrFl = 0x5B6F48;
+            SetLoadLibraryAHook(loadLibraryAddrFl);
+        }
     }
 
     return TRUE;

@@ -24,3 +24,5 @@ public:
 private:
     BYTE data[0x1565];
 };
+
+bool Import IsMPServer();

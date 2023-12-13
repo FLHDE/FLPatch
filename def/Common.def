@@ -10,3 +10,4 @@ EXPORTS
 ?get_value_float@INI_Reader@@QAEMI@Z
 ?get_value_string@INI_Reader@@QAEPBDI@Z
 ?close@INI_Reader@@QAEXXZ
+?IsMPServer@@YA_NXZ
