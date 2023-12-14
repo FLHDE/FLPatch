@@ -3,6 +3,9 @@
 
 DWORD _;
 
+#define LOAD_LIBRARY_RPC_OFFSET 0xF210
+#define LOAD_LIBRARY_FL_ADDR 0x5B6F48
+
 typedef enum PatchType
 {
     Hex, Int, Byte, Float, Double
@@ -72,8 +75,8 @@ HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
     {
         if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
         {
-            DWORD loadLibraryAddrRpc = (DWORD) result + 0xF210;
-            SetLoadLibraryAHook(loadLibraryAddrRpc);
+            DWORD loadLibraryRpcAddr = (DWORD) result + LOAD_LIBRARY_RPC_OFFSET;
+            SetLoadLibraryAHook(loadLibraryRpcAddr);
         }
         else if (stricmp(lpLibFileName, "server.dll") == 0)
         {
@@ -175,15 +178,13 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     // TODO:
     // Call set value functions common.dll
     // Split up into multiple files
-    // Define hard coded addresses
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         Init();
 
         if (!IsMPServer())
         {
-            DWORD loadLibraryAddrFl = 0x5B6F48;
-            SetLoadLibraryAHook(loadLibraryAddrFl);
+            SetLoadLibraryAHook(LOAD_LIBRARY_FL_ADDR);
         }
     }
 
