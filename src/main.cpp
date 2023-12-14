@@ -172,7 +172,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     UNREFERENCED_PARAMETER(hinstDLL);
     UNREFERENCED_PARAMETER(lpReserved);
 
-    // TODO: Support FLServer
+    // TODO:
     // Call set value functions common.dll
     // Split up into multiple files
     // Define hard coded addresses
