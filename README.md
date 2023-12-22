@@ -1,12 +1,12 @@
 # FLPatch
-Config-based patching plugin for Freelancer and FLServer.
+Config-based patching plugin for Freelancer and FLServer. Please keep in mind that this plugin performs patches dynamically. As a result, some patches that are applied this way may have no effect due to memory being read *before* the plugin gets loaded. In such cases, the patch will have to be applied using a hex edit instead. See the wiki page for patches that cannot be applied with FLPatch: https://github.com/BC46/FLPatch/wiki.
 
 ## Installation instructions
 Download the latest `FLPatch.dll` from [Releases](https://github.com/BC46/FLPatch/releases). Extract the `dll` to the `EXE` folder of your Freelancer installation.
 Next, open `dacom.ini` and `dacomsrv.ini`, and for both files add `FLPatch.dll` to the `[Libraries]` section.
 
 ## Usage instructions
-In the `EXE` folder of your Freelancer installation, create a new file called `patches.ini`. FLPatch will apply all patches specified in this file. Example patch:
+In the `EXE` folder of your Freelancer installation, create a new file called `patches.ini`. FLPatch will apply all patches specified in this file while either Freelancer or FLServer is running. Example patch:
 
 ```ini
 [Patch]
