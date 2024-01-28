@@ -1,99 +1,9 @@
 #include "main.h"
-#include <iostream>
-
-DWORD _;
+#include "utils.h"
+#include "Common.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF210
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F48
-
-typedef enum PatchType
-{
-    Hex, Int, Byte, Float, Double
-} PatchType;
-
-PatchType GetPatchType(LPCSTR str)
-{
-    UINT length = strlen(str);
-
-    if (length == 0)
-        goto done;
-
-    switch (tolower(str[0]))
-    {
-        case 'h':
-            return Hex;
-        case 'i':
-            return Int;
-        case 'f':
-            return Float;
-        case 'd':
-            return Double;
-        case 'b':
-            return Byte;
-    }
-
-done:
-    return Hex;
-}
-
-void Patch(LPVOID vOffset, LPVOID mem, UINT len)
-{
-    VirtualProtect(vOffset, len, PAGE_EXECUTE_READWRITE, &_);
-    memcpy(vOffset, mem, len);
-}
-
-bool IsCharHexadecimal(char c)
-{
-    return (c >= '0' && c <= '9') || (tolower(c) >= 'a' && tolower(c) <= 'f');
-}
-
-void StringToHex(LPCSTR str, std::string &dest)
-{
-    int hexIndex = 0;
-    char hexBytes[3] = { 0 };
-
-    for (UINT i = 0; str[i] != NULL; ++i)
-    {
-        if (IsCharHexadecimal(str[i]))
-            hexBytes[hexIndex++] = str[i];
-
-        if (hexIndex == 2)
-        {
-            dest += (char) strtoul(hexBytes, NULL, 16);
-
-            hexIndex = 0;
-            ZeroMemory(hexBytes, 2);
-        }
-    }
-}
-
-HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
-{
-    HMODULE result = LoadLibraryA(lpLibFileName);
-
-    if (result != NULL)
-    {
-        if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
-        {
-            DWORD loadLibraryRpcAddr = (DWORD) result + LOAD_LIBRARY_RPC_OFFSET;
-            SetLoadLibraryAHook(loadLibraryRpcAddr);
-        }
-        else if (stricmp(lpLibFileName, "server.dll") == 0)
-        {
-            Init((UINT) result);
-        }
-    }
-
-    return result;
-}
-
-void SetLoadLibraryAHook(DWORD location)
-{
-    static DWORD hookPtr = (DWORD) LoadLibraryAHook;
-    DWORD hookPtrRef = (DWORD) &hookPtr;
-
-    Patch((PVOID) location, &hookPtrRef, sizeof(DWORD));
-}
 
 void Init(UINT onlyAllowedModule = NULL)
 {
@@ -170,14 +80,45 @@ void Init(UINT onlyAllowedModule = NULL)
     reader.close();
 }
 
+HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
+{
+    HMODULE result = LoadLibraryA(lpLibFileName);
+
+    if (result != NULL)
+    {
+        if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
+        {
+            DWORD loadLibraryRpcAddr = (DWORD) result + LOAD_LIBRARY_RPC_OFFSET;
+            SetLoadLibraryAHook(loadLibraryRpcAddr);
+        }
+        else if (stricmp(lpLibFileName, "server.dll") == 0)
+        {
+            Init((UINT) result);
+        }
+    }
+
+    return result;
+}
+
+void SetLoadLibraryAHook(DWORD location)
+{
+    static DWORD hookPtr = (DWORD) LoadLibraryAHook;
+    DWORD hookPtrRef = (DWORD) &hookPtr;
+
+    Patch((PVOID) location, &hookPtrRef, sizeof(DWORD));
+}
+
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 {
     UNREFERENCED_PARAMETER(hinstDLL);
     UNREFERENCED_PARAMETER(lpReserved);
 
     // TODO:
-    // Call set value functions common.dll
-    // Split up into multiple files
+    // Call set value functions common.dll and Freelancer.exe
+    // fl 1C8910: Single (float32) 20000 -> 40000. Increases the poly flipping distance, which allows jumpholes and other effects to be seen from further away.
+    // common 13F48C: Single (float32) 10000 -> 50000. Increases the maximum docking initiation distance.
+    // Add comments
+
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         Init();

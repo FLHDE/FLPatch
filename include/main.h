@@ -1,7 +1,6 @@
-#include "Common.h"
+#pragma once
 
-HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName);
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 
 void SetLoadLibraryAHook(DWORD location);
-
-void Init(UINT onlyAllowedModule);
