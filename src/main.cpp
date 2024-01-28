@@ -4,8 +4,8 @@
 #include "utils.h"
 #include "Common.h"
 
-#define LOAD_LIBRARY_RPC_OFFSET 0xF210
-#define LOAD_LIBRARY_FL_ADDR 0x5B6F48
+#define LOAD_LIBRARY_RPC_OFFSET 0xF20E
+#define LOAD_LIBRARY_FL_ADDR 0x5B6F46
 
 void LoadPatches(UINT onlyAllowedModule = NULL)
 {
@@ -119,7 +119,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     // Call set value functions common.dll and Freelancer.exe
     // fl 1C8910: Single (float32) 20000 -> 40000. Increases the poly flipping distance, which allows jumpholes and other effects to be seen from further away.
     // common 13F48C: Single (float32) 10000 -> 50000. Increases the maximum docking initiation distance.
-    // Add comments
 
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
