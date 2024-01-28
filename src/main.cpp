@@ -1,11 +1,13 @@
-#include "main.h"
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include "utils.h"
 #include "Common.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF210
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F48
 
-void Init(UINT onlyAllowedModule = NULL)
+void LoadPatches(UINT onlyAllowedModule = NULL)
 {
     INI_Reader reader;
 
@@ -33,11 +35,14 @@ void Init(UINT onlyAllowedModule = NULL)
 
             if (reader.is_value("value"))
             {
+                // If the module or the offset are null, do not patch
+                // If we specified that we only want to apply patches to a certain module, then don't patch in other modules either
                 if (module == NULL || offset == NULL || (onlyAllowedModule != NULL && onlyAllowedModule != module))
                     continue;
 
                 LPVOID vOffset = (LPVOID) (module + offset);
 
+                // Apply the correct patch based on the type
                 switch (patchType)
                 {
                     case Int:
@@ -80,6 +85,8 @@ void Init(UINT onlyAllowedModule = NULL)
     reader.close();
 }
 
+// This hook is used to apply patches in server.dll when the client loads it
+// First we check when rpclocal.dll gets loaded by Freelancer.exe, then we place a hook in that dll. Then it should load server.dll later
 HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
 {
     HMODULE result = LoadLibraryA(lpLibFileName);
@@ -88,24 +95,19 @@ HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
     {
         if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
         {
+            // rpclocal.dll is responsible for loading server.dll on the client side, so we set a hook there
             DWORD loadLibraryRpcAddr = (DWORD) result + LOAD_LIBRARY_RPC_OFFSET;
-            SetLoadLibraryAHook(loadLibraryRpcAddr);
+            Hook(loadLibraryRpcAddr, (DWORD) LoadLibraryAHook, 6);
         }
         else if (stricmp(lpLibFileName, "server.dll") == 0)
         {
-            Init((UINT) result);
+            // This means server.dll has been loaded by rpclocal.dll
+            // Now we want to apply all server.dll patches since those couldn't be applied before
+            LoadPatches((UINT) result);
         }
     }
 
     return result;
-}
-
-void SetLoadLibraryAHook(DWORD location)
-{
-    static DWORD hookPtr = (DWORD) LoadLibraryAHook;
-    DWORD hookPtrRef = (DWORD) &hookPtr;
-
-    Patch((PVOID) location, &hookPtrRef, sizeof(DWORD));
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
@@ -121,12 +123,11 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
-        Init();
+        LoadPatches();
 
+        // If the client is running, we want to set a hook so we can apply patches to server.dll as well since this one gets loaded later
         if (!IsMPServer())
-        {
-            SetLoadLibraryAHook(LOAD_LIBRARY_FL_ADDR);
-        }
+            Hook(LOAD_LIBRARY_FL_ADDR, (DWORD) LoadLibraryAHook, 6);
     }
 
     return TRUE;
