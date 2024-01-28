@@ -40,7 +40,9 @@ $(BIN_DIR):
     if not exist $(BIN_DIR) mkdir $(BIN_DIR)
 
 # Dependencies
-$(SRC_DIR)\main.cpp: $(INCLUDE_DIR)\utils.h $(INCLUDE_DIR)\Common.h
+$(SRC_DIR)\main.cpp: $(INCLUDE_DIR)\utils.h $(INCLUDE_DIR)\Common.h $(INCLUDE_DIR)\internal.h
+$(SRC_DIR)\internal.cpp: $(INCLUDE_DIR)\internal.h
+$(SRC_DIR)\utils.cpp: $(INCLUDE_DIR)\utils.h
 
 clean:
 	del $(BIN_DIR)\*.dll $(OBJ_DIR)\*.obj $(OBJ_DIR)\*.RES $(OBJ_DIR)\*.lib

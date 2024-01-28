@@ -2,6 +2,7 @@
 #include <windows.h>
 
 #include "utils.h"
+#include "internal.h"
 #include "Common.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF20E
@@ -115,14 +116,10 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     UNREFERENCED_PARAMETER(hinstDLL);
     UNREFERENCED_PARAMETER(lpReserved);
 
-    // TODO:
-    // Call set value functions common.dll and Freelancer.exe
-    // fl 1C8910: Single (float32) 20000 -> 40000. Increases the poly flipping distance, which allows jumpholes and other effects to be seen from further away.
-    // common 13F48C: Single (float32) 10000 -> 50000. Increases the maximum docking initiation distance.
-
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         LoadPatches();
+        SetInternalValues();
 
         // If the client is running, we want to set a hook so we can apply patches to server.dll as well since this one gets loaded later
         if (!IsMPServer())
