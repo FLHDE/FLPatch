@@ -39,7 +39,6 @@ void SetInternalValues()
             continue;
 
         GenericClassFunc* classFunc = (GenericClassFunc*) (module + classFuncs[i].fileOffset);
-
         (classFunc)((PVOID) classFuncs[i].thisPtr, NULL);
     }
 }
