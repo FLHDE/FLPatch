@@ -16,6 +16,7 @@ public:
     bool is_header(LPCSTR name);
     bool read_value();
     bool is_value(LPCSTR name);
+    bool get_value_bool(UINT index = 0);
     int get_value_int(UINT index = 0);
     float get_value_float(UINT index = 0);
     LPCSTR get_value_string(UINT index = 0);

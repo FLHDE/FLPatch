@@ -4,9 +4,34 @@
 #include "utils.h"
 #include "internal.h"
 #include "Common.h"
+#include "Dacom.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF20E
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F46
+
+bool isDebug = false;
+
+void ReadIsDebug()
+{
+    INI_Reader reader;
+
+    if (!reader.open("patches.ini"))
+        return;
+
+    while (reader.read_header())
+    {
+        if (!reader.is_header("Options"))
+            continue;
+
+        while (reader.read_value())
+        {
+            if (reader.is_value("debug"))
+                isDebug = reader.get_value_bool();
+        }
+    }
+
+    reader.close();
+}
 
 void LoadPatches(UINT onlyAllowedModule = NULL)
 {
@@ -118,6 +143,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
+        ReadIsDebug();
         LoadPatches();
         SetInternalValues();
 

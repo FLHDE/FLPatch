@@ -12,9 +12,10 @@ enum Severity
     SEV_NOTICE  = 0x00100003
 };
 
-typedef int (*FDUMP_HANDLER) (Severity severity, LPCSTR message, ...);
+// The parameter pack contains optional values that are used to replace the format specifiers in formattedMessage
+typedef int (*FDUMP_HANDLER) (Severity severity, LPCSTR formattedMessage, ...);
 
 extern "C"
 {
-	Import FDUMP_HANDLER FDUMP;
+    Import FDUMP_HANDLER FDUMP;
 }
