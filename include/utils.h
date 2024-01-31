@@ -13,9 +13,14 @@ PatchType GetPatchType(LPCSTR str);
 
 void Patch(LPVOID vOffset, LPVOID mem, UINT len);
 
+void ReadBytes(LPVOID dest, LPVOID src, UINT len);
+
 void Hook(DWORD location, DWORD hookFunc, UINT instrLen);
 
 void StringToHex(LPCSTR str, std::string &dest);
+
+// len should be excluding null-character at the end
+LPSTR BytesToHexString(LPCSTR bytes, UINT len);
 
 inline LPCSTR ToString(PatchType pt)
 {

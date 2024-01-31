@@ -5,6 +5,7 @@
 #include "internal.h"
 #include "Common.h"
 #include "Dacom.h"
+#include "debug.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF20E
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F46
@@ -99,24 +100,40 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
                     case Int:
                     {
                         int intVal = reader.get_value_int();
+
+                        if (isDebug)
+                            DumpIntPatch(moduleName, offset, vOffset, intVal);
+
                         Patch(vOffset, &intVal, sizeof(int));
                         break;
                     }
                     case Byte:
                     {
                         char byteVal = (char) reader.get_value_int();
+
+                        if (isDebug)
+                            DumpSBytePatch(moduleName, offset, vOffset, byteVal);
+
                         Patch(vOffset, &byteVal, sizeof(char));
                         break;
                     }
                     case Float:
                     {
                         float floatVal = reader.get_value_float();
+
+                        if (isDebug)
+                            DumpFloatPatch(moduleName, offset, vOffset, floatVal);
+
                         Patch(vOffset, &floatVal, sizeof(float));
                         break;
                     }
                     case Double:
                     {
                         double doubleVal = (double) reader.get_value_float();
+
+                        if (isDebug)
+                            DumpDoublePatch(moduleName, offset, vOffset, doubleVal);
+
                         Patch(vOffset, &doubleVal, sizeof(double));
                         break;
                     }
@@ -124,6 +141,9 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
                     {
                         std::string bytes;
                         StringToHex(reader.get_value_string(), bytes);
+
+                        if (isDebug)
+                            DumpHexPatch(moduleName, offset, vOffset, bytes);
 
                         Patch(vOffset, bytes.begin(), bytes.size());
                         break;
