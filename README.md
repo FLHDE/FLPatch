@@ -28,6 +28,17 @@ This will patch file offset `1234AB` in `common.dll` and set the float value `42
 
 **NOTE**: The order in which the parameters `module`, `offset`, and `type` are specified does not matter, but `value` must always come last.
 
+### Debugging
+
+To verify that a patch has been correctly set, the plugin offers the opportunity to view logged information about the whole patching process. This behavior can be enabled by adding the following to the `patches.ini` file:
+
+```ini
+[Options]
+debug = true
+```
+
+On which exact line in `patches.ini` this snippet is added does not matter, but you may want this at the top for convenience. When Freelancer.exe is launched with the debug option enabled, the logging will be shown in `FLSpew.txt`. With FLServer.exe on the other hand, the logging can be viewed in the console (`View -> Console`). To disable the debug logging, either change `debug` to `false` or remove the added snippet.
+
 ## Build instructions
 Build the project using the `NMAKE` tool from Microsoft Visual C++ 6.0 (VC6 or Visual Studio 98) with the included makefile.
 This will output the `FLPatch.dll` file in the `bin` folder.
