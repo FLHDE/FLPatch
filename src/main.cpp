@@ -160,14 +160,11 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
 // This hook is used to apply patches in content.dll when the client or server loads it
 HMODULE __stdcall LoadLibraryAHookServer(LPCSTR absLibFileName, LPCSTR lpLibFileName)
 {
-    bool contentModuleAlreadyLoaded = false;
-
-    if (stricmp(absLibFileName, "content.dll") == 0 && GetModuleHandleA("content.dll"))
-        contentModuleAlreadyLoaded = true;
+    bool contentModuleAlreadyLoaded = GetModuleHandleA("content.dll") != 0;
 
     HMODULE result = LoadLibraryA(lpLibFileName);
 
-    if (!contentModuleAlreadyLoaded && result != NULL)
+    if (!contentModuleAlreadyLoaded && stricmp(absLibFileName, "content.dll") == 0 && result != NULL)
     {
         if (isDebug)
             FDUMP(SEV_NOTICE, ("FLPatch.dll NOTICE: content.dll loaded; patching only in content.dll."));
