@@ -7,8 +7,8 @@ void DumpIntPatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffse
     int oldValue;
     ReadBytes(&oldValue, vOffset, sizeof(int));
 
-    FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching: Module %s, File offset %X, Type %s, %ii -> %ii, Virtual address %X.",
-        moduleName.c_str(), fileOffset, ToString(Int), oldValue, newValue, vOffset);
+    FDUMP(SEV_NOTICE, "%sPatching: Module %s, File offset %X, Type %s, %ii -> %ii, Virtual address %X.",
+        noticeLog, moduleName.c_str(), fileOffset, ToString(Int), oldValue, newValue, vOffset);
 }
 
 void DumpSBytePatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffset, char newValue)
@@ -16,8 +16,8 @@ void DumpSBytePatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOff
     char oldValue;
     ReadBytes(&oldValue, vOffset, sizeof(char));
 
-    FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching: Module %s, File offset %X, Type %s, %ib -> %ib, Virtual address %X.",
-        moduleName.c_str(), fileOffset, ToString(Byte), oldValue, newValue, vOffset);
+    FDUMP(SEV_NOTICE, "%sPatching: Module %s, File offset %X, Type %s, %ib -> %ib, Virtual address %X.",
+        noticeLog, moduleName.c_str(), fileOffset, ToString(Byte), oldValue, newValue, vOffset);
 }
 
 void DumpFloatPatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffset, float newValue)
@@ -25,8 +25,8 @@ void DumpFloatPatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOff
     float oldValue;
     ReadBytes(&oldValue, vOffset, sizeof(float));
 
-    FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching: Module %s, File offset %X, Type %s, %ff -> %ff, Virtual address %X.",
-        moduleName.c_str(), fileOffset, ToString(Float), oldValue, newValue, vOffset);
+    FDUMP(SEV_NOTICE, "%sPatching: Module %s, File offset %X, Type %s, %ff -> %ff, Virtual address %X.",
+        noticeLog, moduleName.c_str(), fileOffset, ToString(Float), oldValue, newValue, vOffset);
 }
 
 void DumpDoublePatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffset, double newValue)
@@ -34,8 +34,8 @@ void DumpDoublePatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOf
     double oldValue;
     ReadBytes(&oldValue, vOffset, sizeof(double));
 
-    FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching: Module %s, File offset %X, Type %s, %fd -> %fd, Virtual address %X.",
-        moduleName.c_str(), fileOffset, ToString(Double), oldValue, newValue, vOffset);
+    FDUMP(SEV_NOTICE, "%sPatching: Module %s, File offset %X, Type %s, %fd -> %fd, Virtual address %X.",
+        noticeLog, moduleName.c_str(), fileOffset, ToString(Double), oldValue, newValue, vOffset);
 }
 
 void DumpHexPatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffset, const std::string &newValue)
@@ -46,8 +46,8 @@ void DumpHexPatch(const std::string &moduleName, DWORD fileOffset, LPVOID vOffse
     LPSTR oldValueStr = BytesToHexString((LPCSTR) oldValue, newValue.size());
     LPSTR newValueStr = BytesToHexString(newValue.c_str(), newValue.size());
 
-    FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching: Module %s, File offset %X, Type %s, %s -> %s, Virtual address %X.",
-        moduleName.c_str(), fileOffset, ToString(Hex), oldValueStr, newValueStr, vOffset);
+    FDUMP(SEV_NOTICE, "%sPatching: Module %s, File offset %X, Type %s, %s -> %s, Virtual address %X.",
+        noticeLog, moduleName.c_str(), fileOffset, ToString(Hex), oldValueStr, newValueStr, vOffset);
 
     delete[] oldValue;
     delete[] oldValueStr;

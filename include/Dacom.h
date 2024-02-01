@@ -13,9 +13,14 @@ enum Severity
 };
 
 // The parameter pack contains optional values that are used to replace the format specifiers in formattedMessage
-typedef int (*FDUMP_HANDLER) (Severity severity, LPCSTR formattedMessage, ...);
+typedef int (*FDUMP_HANDLER) (Severity severity, LPCSTR fmt, ...);
 
 extern "C"
 {
     Import FDUMP_HANDLER FDUMP;
 }
+
+// This would've been a lot easier with variadic macros, but unfortunately VC6 didn't quite agree with me...
+const LPCSTR    errorLog = "FLPatch.dll ERROR: ",
+                warningLog = "FLPatch.dll WARNING: ",
+                noticeLog = "FLPatch.dll NOTICE: ";

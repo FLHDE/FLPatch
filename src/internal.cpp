@@ -29,8 +29,8 @@ void SetInternalValues(bool isDebug)
         if (!module)
         {
             if (isDebug)
-                FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Cannot find module %s for generic set value function: File offset %X. Not calling.",
-                    funcs[i].moduleName, funcs[i].fileOffset);
+                FDUMP(SEV_WARNING, "%sCannot find module %s for generic set value function: File offset %X. Not calling.",
+                    warningLog, funcs[i].moduleName, funcs[i].fileOffset);
 
             continue;
         }
@@ -38,8 +38,8 @@ void SetInternalValues(bool isDebug)
         LPVOID vOffset = (LPVOID) (module + funcs[i].fileOffset);
 
         if (isDebug)
-            FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Calling generic set value function: Module %s, File offset %X, Virtual address %X.",
-                funcs[i].moduleName, funcs[i].fileOffset, vOffset);
+            FDUMP(SEV_NOTICE, "%sCalling generic set value function: Module %s, File offset %X, Virtual address %X.",
+                noticeLog, funcs[i].moduleName, funcs[i].fileOffset, vOffset);
 
         GenericFunc* func = (GenericFunc*) vOffset;
         (func)();
@@ -52,8 +52,8 @@ void SetInternalValues(bool isDebug)
         if (!module)
         {
             if (isDebug)
-                FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Cannot find module %s for generic CLASS set value function: File offset %X, thisptr %X. Not calling.",
-                    classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr);
+                FDUMP(SEV_WARNING, "%sCannot find module %s for generic CLASS set value function: File offset %X, thisptr %X. Not calling.",
+                    warningLog, classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr);
 
             continue;
         }
@@ -61,8 +61,8 @@ void SetInternalValues(bool isDebug)
         LPVOID vOffset = (LPVOID) (module + classFuncs[i].fileOffset);
 
         if (isDebug)
-            FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Calling generic CLASS set value function: Module %s, File offset %X, thisptr %X, Virtual address %X.",
-                classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr, vOffset);
+            FDUMP(SEV_NOTICE, "%sCalling generic CLASS set value function: Module %s, File offset %X, thisptr %X, Virtual address %X.",
+                noticeLog, classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr, vOffset);
 
         GenericClassFunc* classFunc = (GenericClassFunc*) vOffset;
         (classFunc)((PVOID) classFuncs[i].thisPtr, NULL);

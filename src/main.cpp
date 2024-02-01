@@ -11,6 +11,8 @@
 #define LOAD_LIBRARY_SERVER_OFFSET 0x63CA2
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F46
 
+#define CAN_SKIP (onlyAllowedModule != NULL && onlyAllowedModule != module)
+
 bool isDebug = false;
 
 void ReadIsDebug()
@@ -42,7 +44,7 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
     if (!reader.open("patches.ini"))
     {
         if (isDebug)
-            FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Cannot open patches.ini.");
+            FDUMP(SEV_WARNING, "%sCannot open patches.ini.", warningLog);
 
         return;
     }
@@ -55,6 +57,7 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
         std::string moduleName;
         DWORD module, offset = NULL;
         PatchType patchType = Hex;
+        bool success = false; // Success means patched without error logged or skipped with error logged
 
         while (reader.read_value())
         {
@@ -62,6 +65,10 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
             {
                 moduleName = std::string(reader.get_value_string());
                 module = (DWORD) GetModuleHandleA(moduleName.c_str());
+
+                // Wtf?
+                if (stricmp(moduleName.c_str(), "dalib.dll") == 0)
+                    module += 0xC00;
             }
 
             if (reader.is_value("offset"))
@@ -73,23 +80,25 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
             if (reader.is_value("value"))
             {
                 // If we specified that we only want to apply patches to a certain module, then don't patch in other modules
-                if (onlyAllowedModule != NULL && onlyAllowedModule != module)
+                if (CAN_SKIP)
                     continue;
 
                 // If the module or the offset are null, do not patch
                 if (module == NULL)
                 {
                     if (isDebug)
-                        FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Module %s could not be found for patch: Offset %X, Type %s. Not patching.", moduleName.c_str(), offset, ToString(patchType));
+                        FDUMP(SEV_WARNING, "%sModule %s could not be found for patch: File offset %X, Type %s. Not patching.", warningLog, moduleName.c_str(), offset, ToString(patchType));
 
+                    success = true;
                     continue;
                 }
 
                 if (offset == NULL)
                 {
                     if (isDebug)
-                        FDUMP(SEV_ERROR, "FLPatch.dll ERROR: No offset specified for patch: Module %s, Type %s. Not patching.", moduleName.c_str(), ToString(patchType));
+                        FDUMP(SEV_ERROR, "%sNo offset specified for patch: Module %s, Type %s. Not patching.", errorLog, moduleName.c_str(), ToString(patchType));
 
+                    success = true;
                     continue;
                 }
 
@@ -150,8 +159,13 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
                         break;
                     }
                 }
+
+                success = true;
             }
         }
+
+        if (!success && isDebug && !CAN_SKIP)
+            FDUMP(SEV_ERROR, "%sNo value specified for patch: Module %s, File offset %X, Type %s. Not patched.", errorLog, moduleName.c_str(), offset, ToString(patchType));
     }
 
     reader.close();
@@ -167,7 +181,7 @@ HMODULE __stdcall LoadLibraryAHookServer(LPCSTR absLibFileName, LPCSTR lpLibFile
     if (!contentModuleAlreadyLoaded && stricmp(absLibFileName, "content.dll") == 0 && result != NULL)
     {
         if (isDebug)
-            FDUMP(SEV_NOTICE, ("FLPatch.dll NOTICE: content.dll loaded; patching only in content.dll."));
+            FDUMP(SEV_NOTICE, "%scontent.dll loaded; patching only in content.dll.", noticeLog);
 
         LoadPatches((UINT) result);
     }
@@ -186,7 +200,7 @@ void SetLoadLibraryAHookServer()
     Hook(loadLibraryServerAddr + 1, (DWORD) LoadLibraryAHookServer, 5);
 
     if (isDebug)
-        FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Module load hook set in server.dll; waiting for content.dll to load.");
+        FDUMP(SEV_NOTICE, "%sModule load hook set in server.dll; waiting for content.dll to load.", noticeLog);
 }
 
 // This hook is used to apply patches in server.dll when the client loads it
@@ -200,7 +214,7 @@ HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
         if (stricmp(lpLibFileName, "rpclocal.dll") == 0)
         {
             if (isDebug)
-                FDUMP(SEV_NOTICE, ("FLPatch.dll NOTICE: rpclocal.dll loaded; waiting for server.dll to load."));
+                FDUMP(SEV_NOTICE, "%srpclocal.dll loaded; waiting for server.dll to load.", noticeLog);
 
             // rpclocal.dll is responsible for loading server.dll on the client side, so we set a hook there
             DWORD loadLibraryRpcAddr = (DWORD) result + LOAD_LIBRARY_RPC_OFFSET;
@@ -209,7 +223,7 @@ HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
         else if (stricmp(lpLibFileName, "server.dll") == 0)
         {
             if (isDebug)
-                FDUMP(SEV_NOTICE, ("FLPatch.dll NOTICE: server.dll loaded; patching only in server.dll."));
+                FDUMP(SEV_NOTICE, "%sserver.dll loaded; patching only in server.dll.", noticeLog);
 
             // This means server.dll has been loaded by rpclocal.dll
             // Now we want to apply all server.dll patches since those couldn't be applied before
@@ -231,17 +245,17 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
     if (fdwReason == DLL_PROCESS_ATTACH)
     {
         if (isDebug)
-            FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Reading debug options.");
+            FDUMP(SEV_NOTICE, "%sReading debug options.", noticeLog);
 
         ReadIsDebug();
 
         if (isDebug)
-            FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Patching all.");
+            FDUMP(SEV_NOTICE, "%sPatching all.", noticeLog);
 
         LoadPatches();
 
         if (isDebug)
-            FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Calling set internal value functions.");
+            FDUMP(SEV_NOTICE, "%sCalling set internal value functions.", noticeLog);
 
         SetInternalValues(isDebug);
 
@@ -257,7 +271,7 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
             Hook(LOAD_LIBRARY_FL_ADDR, (DWORD) LoadLibraryAHook, 6);
 
             if (isDebug)
-                FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Module load hook set in Freelancer.exe; waiting for rpclocal.dll to load.");
+                FDUMP(SEV_NOTICE, "%sModule load hook set in Freelancer.exe; waiting for rpclocal.dll to load.", noticeLog);
         }
     }
 
