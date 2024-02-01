@@ -31,6 +31,14 @@ void Patch(LPVOID vOffset, LPVOID mem, UINT len)
     memcpy(vOffset, mem, len);
 }
 
+void ReadBytes(LPVOID dest, LPVOID src, UINT len)
+{
+    static DWORD _;
+
+    VirtualProtect(src, len, PAGE_EXECUTE_READWRITE, &_);
+    memcpy(dest, src, len);
+}
+
 void Nop(LPVOID vOffset, UINT len)
 {
     if (len == 0)
@@ -82,4 +90,16 @@ void StringToHex(LPCSTR str, std::string &dest)
             ZeroMemory(hexBytes, 2);
         }
     }
+}
+
+LPSTR BytesToHexString(LPCSTR bytes, UINT len)
+{
+    LPSTR result = new char[len * 3 + 1];
+
+    for (UINT i = 0; i < len; ++i)
+        sprintf(result + i * 3, "%02X ", (unsigned char) bytes[i]);
+
+    result[len * 3 - 1] = '\0';
+
+    return result;
 }

@@ -23,4 +23,4 @@ struct ClassFuncInfo
 // This function is used to effectively re-set some internal values in the Freelancer binaries
 // We use this because otherwise some patches may have no effect due to memory being read before FLPatch is loaded
 // Thanks to this function, the patched values will actually be used
-void SetInternalValues();
+void SetInternalValues(bool isDebug);
