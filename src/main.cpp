@@ -8,6 +8,7 @@
 #include "debug.h"
 
 #define LOAD_LIBRARY_RPC_OFFSET 0xF20E
+#define LOAD_LIBRARY_SERVER_OFFSET 0x63CA2
 #define LOAD_LIBRARY_FL_ADDR 0x5B6F46
 
 bool isDebug = false;
@@ -156,6 +157,41 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
     reader.close();
 }
 
+// This hook is used to apply patches in content.dll when the client or server loads it
+HMODULE __stdcall LoadLibraryAHookServer(LPCSTR absLibFileName, LPCSTR lpLibFileName)
+{
+    bool contentModuleAlreadyLoaded = false;
+
+    if (stricmp(absLibFileName, "content.dll") == 0 && GetModuleHandleA("content.dll"))
+        contentModuleAlreadyLoaded = true;
+
+    HMODULE result = LoadLibraryA(lpLibFileName);
+
+    if (!contentModuleAlreadyLoaded && result != NULL)
+    {
+        if (isDebug)
+            FDUMP(SEV_NOTICE, ("FLPatch.dll NOTICE: content.dll loaded; patching only in content.dll."));
+
+        LoadPatches((UINT) result);
+    }
+
+    return result;
+}
+
+void SetLoadLibraryAHookServer()
+{
+    DWORD loadLibraryServerAddr = (DWORD) GetModuleHandleA("server.dll") + LOAD_LIBRARY_SERVER_OFFSET;
+
+    BYTE pushEsi = 0x56;
+    Patch((LPVOID) loadLibraryServerAddr, &pushEsi, sizeof(BYTE));
+
+    // Set hook for loading content.dll
+    Hook(loadLibraryServerAddr + 1, (DWORD) LoadLibraryAHookServer, 5);
+
+    if (isDebug)
+        FDUMP(SEV_NOTICE, "FLPatch.dll NOTICE: Module load hook set in server.dll; waiting for content.dll to load.");
+}
+
 // This hook is used to apply patches in server.dll when the client loads it
 // First we check when rpclocal.dll gets loaded by Freelancer.exe, then we place a hook in that dll. Then it should load server.dll later
 HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
@@ -181,6 +217,9 @@ HMODULE __stdcall LoadLibraryAHook(LPCSTR lpLibFileName)
             // This means server.dll has been loaded by rpclocal.dll
             // Now we want to apply all server.dll patches since those couldn't be applied before
             LoadPatches((UINT) result);
+
+            // Set hook for loading content.dll
+            SetLoadLibraryAHookServer();
         }
     }
 
@@ -209,9 +248,15 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
         SetInternalValues(isDebug);
 
-        // If the client is running (i.e. not the server), we want to set a hook so we can apply patches to server.dll as well since this one gets loaded later
-        if (!IsMPServer())
+
+        if (IsMPServer())
         {
+            // Set hook for loading content.dll
+            SetLoadLibraryAHookServer();
+        }
+        else
+        {
+            // If the client is running (i.e. not the server), we want to set a hook so we can apply patches to server.dll as well since this one gets loaded later
             Hook(LOAD_LIBRARY_FL_ADDR, (DWORD) LoadLibraryAHook, 6);
 
             if (isDebug)

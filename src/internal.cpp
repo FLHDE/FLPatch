@@ -52,8 +52,8 @@ void SetInternalValues(bool isDebug)
         if (!module)
         {
             if (isDebug)
-                FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Cannot find module %s for generic CLASS set value function: File offset %X. Not calling.",
-                    classFuncs[i].moduleName, classFuncs[i].fileOffset);
+                FDUMP(SEV_WARNING, "FLPatch.dll WARNING: Cannot find module %s for generic CLASS set value function: File offset %X, thisptr %X. Not calling.",
+                    classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr);
 
             continue;
         }
