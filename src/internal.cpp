@@ -65,6 +65,6 @@ void SetInternalValues(bool isDebug)
                 noticeLog, classFuncs[i].moduleName, classFuncs[i].fileOffset, classFuncs[i].thisPtr, vOffset);
 
         GenericClassFunc* classFunc = (GenericClassFunc*) vOffset;
-        (classFunc)((PVOID) classFuncs[i].thisPtr, NULL);
+        (classFunc)((PVOID) classFuncs[i].thisPtr);
     }
 }

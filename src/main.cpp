@@ -55,7 +55,7 @@ void LoadPatches(UINT onlyAllowedModule = NULL)
             continue;
 
         std::string moduleName;
-        DWORD module, offset = NULL;
+        DWORD module = NULL, offset = NULL;
         PatchType patchType = Hex;
         bool success = false; // Success means patched without error logged or skipped with error logged
 

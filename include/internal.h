@@ -4,7 +4,7 @@
 #include <windows.h>
 
 // Generic function definitions
-typedef void (__fastcall GenericClassFunc)(PVOID ecx, PVOID edx);
+typedef void (__fastcall GenericClassFunc)(PVOID thisptr);
 typedef void (GenericFunc)();
 
 struct FuncInfo
