@@ -259,7 +259,6 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpReserved)
 
         SetInternalValues(isDebug);
 
-
         if (IsMPServer())
         {
             // Set hook for loading content.dll
