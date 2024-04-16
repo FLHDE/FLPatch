@@ -19,7 +19,7 @@ LIB_FILES = $(COMMON_LIB_FILE) $(DACOM_LIB_FILE)
 
 OUTPUT_FILE = $(BIN_DIR)\FLPatch.dll
 
-CXX_FLAGS = /c /GX /O2 /nologo /W3 /WX /LD /MD
+CPP_FLAGS = /c /GX /O2 /nologo /W3 /WX /LD /MD
 LD_FLAGS = /DLL /FILEALIGN:512 /NOLOGO /RELEASE
 LIB_FLAGS = /NOLOGO /MACHINE:IX86
 
@@ -27,11 +27,11 @@ $(OUTPUT_FILE): $(OBJ_FILES) $(RES_FILE) $(LIB_FILES) $(BIN_DIR)
     link $(OBJ_FILES) $(LIB_FILES) $(RES_FILE) $(LD_FLAGS) /OUT:$(OUTPUT_FILE)
 
 {$(SRC_DIR)}.cpp{$(OBJ_DIR)}.obj::
-    $(CPP) $(CXX_FLAGS) $< -I$(INCLUDE_DIR) /Fo./$(OBJ_DIR)/
+    $(CPP) $(CPP_FLAGS) $< -I$(INCLUDE_DIR) /Fo./$(OBJ_DIR)/
 
 $(OBJ_FILES): makefile
 
-$(OBJ_DIR)\main.obj: $(SRC_DIR)\main.cpp $(INCLUDE_DIR)\Common.h $(INCLUDE_DIR)\internal.h $(INCLUDE_DIR)\Dacom.h $(INCLUDE_DIR)\debug.h
+$(OBJ_DIR)\main.obj:$(SRC_DIR)\main.cpp $(INCLUDE_DIR)\utils.h $(INCLUDE_DIR)\internal.h $(INCLUDE_DIR)\Common.h $(INCLUDE_DIR)\Dacom.h $(INCLUDE_DIR)\debug.h
 $(OBJ_DIR)\internal.obj: $(SRC_DIR)\internal.cpp $(INCLUDE_DIR)\internal.h $(INCLUDE_DIR)\Dacom.h
 $(OBJ_DIR)\utils.obj: $(SRC_DIR)\utils.cpp $(INCLUDE_DIR)\utils.h
 $(OBJ_DIR)\debug.obj: $(SRC_DIR)\debug.cpp $(INCLUDE_DIR)\debug.h $(INCLUDE_DIR)\utils.h $(INCLUDE_DIR)\Dacom.h
