@@ -1,6 +1,10 @@
 # FLPatch
 Config-based patching plugin for Freelancer and FLServer which serves as a proof of concept replacement for most manual hex edits. Please keep in mind that this plugin performs patches dynamically. As a result, some patches that are applied this way may have no effect due to memory being read *before* the plugin gets loaded. In such cases, the patch will have to be applied using a hex edit instead. See the wiki page for patches that cannot be applied with FLPatch: https://github.com/BC46/FLPatch/wiki.
 
+## ⚠️ Project Archived ⚠️
+The method to apply patches presented in this plugin deemed to be too unreliable.
+Instead of using FLPatch, I would strongly suggest keeping copies of unedited Freelancer binaries and then using a tool like [BwPatch](http://adoxa.altervista.org/misc/index.html#:~:text=8k-,BwPatch,-v1.10) to statically apply the patches based on a config file.
+
 ## Installation instructions
 Download the latest `FLPatch.dll` from [Releases](https://github.com/BC46/FLPatch/releases). Extract the `dll` to the `EXE` folder of your Freelancer installation.
 Next, open `dacom.ini` and `dacomsrv.ini`, and for both files add `FLPatch.dll` to the `[Libraries]` section.
